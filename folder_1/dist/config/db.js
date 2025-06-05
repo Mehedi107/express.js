@@ -8,15 +8,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-const app_1 = __importDefault(require("./app"));
+exports.connectDB = void 0;
+require("dotenv/config");
 const mongodb_1 = require("mongodb");
-const port = 5000;
-let server;
 const uri = 'mongodb+srv://demoTodo:baVuzued1HIK31dj@cluster0.blfnk.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
+// Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new mongodb_1.MongoClient(uri, {
     serverApi: {
         version: mongodb_1.ServerApiVersion.v1,
@@ -24,15 +21,20 @@ const client = new mongodb_1.MongoClient(uri, {
         deprecationErrors: true,
     },
 });
-const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
-    yield client.connect();
-    const db = client.db('demoTodoDB');
-    const collection = db
-        .collection('todos')
-        .insertOne({ test: 'This is for testing' });
-    console.log('>>>> Connected to MongoDB! <<<<');
-    server = app_1.default.listen(port, () => {
-        console.log(`Example app listening on port ${port}`);
+const connectDB = function run() {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            // Connect the client to the server	(optional starting in v4.7)
+            yield client.connect();
+            // Send a ping to confirm a successful connection
+            yield client.db('demoTodoDB').command({ ping: 1 });
+            console.log('You successfully connected to MongoDB!');
+        }
+        finally {
+            // Ensures that the client will close when you finish/error
+            // await client.close();
+        }
+        run().catch(console.dir);
     });
-});
-startServer();
+};
+exports.connectDB = connectDB;
