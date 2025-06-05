@@ -13,26 +13,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const app_1 = __importDefault(require("./app"));
-const mongodb_1 = require("mongodb");
+const mongodb_1 = require("./config/mongodb");
 const port = 5000;
 let server;
-const uri = 'mongodb+srv://demoTodo:baVuzued1HIK31dj@cluster0.blfnk.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
-const client = new mongodb_1.MongoClient(uri, {
-    serverApi: {
-        version: mongodb_1.ServerApiVersion.v1,
-        strict: true,
-        deprecationErrors: true,
-    },
-});
 const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
-    yield client.connect();
-    const db = client.db('demoTodoDB');
-    const collection = db
-        .collection('todos')
-        .insertOne({ test: 'This is for testing' });
-    console.log('>>>> Connected to MongoDB! <<<<');
-    server = app_1.default.listen(port, () => {
-        console.log(`Example app listening on port ${port}`);
-    });
+    try {
+        yield (0, mongodb_1.connectDB)();
+        server = app_1.default.listen(port, () => {
+            console.log(`Example app listening on port ${port}`);
+        });
+    }
+    catch (error) {
+        console.error('❌ Failed to start server:', error);
+    }
 });
 startServer();

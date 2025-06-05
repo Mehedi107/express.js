@@ -9,6 +9,7 @@ const app = (0, express_1.default)();
 // Middleware to parse JSON body
 app.use(express_1.default.json());
 app.use('/todo', todo_route_1.todoRouter);
+app.use('/todos', todo_route_1.todoRouter);
 app.get('/', (req, res) => {
     res.send('Server is running...');
 });

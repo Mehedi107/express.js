@@ -7,6 +7,7 @@ const app: Application = express();
 app.use(express.json());
 
 app.use('/todo', todoRouter);
+app.use('/todos', todoRouter);
 
 app.get('/', (req, res) => {
   res.send('Server is running...');

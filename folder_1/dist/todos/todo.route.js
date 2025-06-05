@@ -14,15 +14,81 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.todoRouter = void 0;
 const express_1 = __importDefault(require("express"));
+const mongodb_1 = require("../config/mongodb");
+const mongodb_2 = require("mongodb");
 exports.todoRouter = express_1.default.Router();
-exports.todoRouter.get('/', (req, res) => {
-    res.send('This is from todos Router');
-});
-exports.todoRouter.post('/todo/create', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const title = req.body.title;
+// Save todo
+exports.todoRouter.post('/create', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const newTodo = req.body;
+    try {
+        const db = (0, mongodb_1.getDB)();
+        const result = yield db.collection('todos').insertOne(newTodo);
+        res.status(201).json(Object.assign(Object.assign({}, result), { message: 'Todo created' }));
+    }
+    catch (error) {
+        res.status(500).json({ error: 'Failed to create todo' });
+    }
 }));
-// async (req: Request, res: Response) => {
-//   const { title } = req.body;
-//   const result = await collection().insertOne({ title, completed: false });
-//   res.status(201).json(result.ops?.[0] || { _id: result.insertedId, title, completed: false });
-// };
+// Get all todos
+exports.todoRouter.get('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const db = (0, mongodb_1.getDB)();
+        const todoCollection = db.collection('todos');
+        const result = yield todoCollection.find().toArray();
+        res.status(201).json(result);
+    }
+    catch (error) {
+        res.status(500).json(error);
+    }
+}));
+// Get todo by id
+exports.todoRouter.get('/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const id = req.params.id;
+    try {
+        const db = (0, mongodb_1.getDB)();
+        const todoCollection = db.collection('todos');
+        const filter = { _id: new mongodb_2.ObjectId(id) };
+        const result = yield todoCollection.findOne(filter);
+        res.status(201).json(result);
+    }
+    catch (error) {
+        res.status(500).json(error);
+    }
+}));
+// Delete todo by id
+exports.todoRouter.delete('/delete/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const id = req.params.id;
+    try {
+        const db = (0, mongodb_1.getDB)();
+        const todoCollection = db.collection('todos');
+        const filter = { _id: new mongodb_2.ObjectId(id) };
+        const result = yield todoCollection.deleteOne(filter);
+        res.status(201).json(Object.assign(Object.assign({}, result), { message: 'Successfully deleted todo' }));
+    }
+    catch (error) {
+        res.status(500).json(error);
+    }
+}));
+// Update todo
+exports.todoRouter.patch('/update/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const id = req.params.id;
+    const { title, description, priority, isComplete } = req.body;
+    try {
+        const db = (0, mongodb_1.getDB)();
+        const todoCollection = db.collection('todos');
+        const filter = { _id: new mongodb_2.ObjectId(id) };
+        const updateDoc = {
+            $set: {
+                title,
+                description,
+                priority,
+                isComplete,
+            },
+        };
+        const result = yield todoCollection.updateOne(filter, updateDoc);
+        res.status(201).json(Object.assign(Object.assign({}, result), { message: 'Successfully updated todo' }));
+    }
+    catch (error) {
+        res.status(500).json(error);
+    }
+}));
